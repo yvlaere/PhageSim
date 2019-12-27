@@ -25,9 +25,12 @@ function updatephages!(grid::AbstractArray{T} where {T<:Integer},
                         pdecay::Real=0.0,
                         poissonapprox=false)
     @assert 0.0 ≤ pdecay ≤ 1.0 "`pdecay` should be in [0, 1], got $pdecay"
+    pdecay == 1.0 && return (grid .= 0)
     ncells = length(grid)
     C = CartesianIndices(grid)
     neigsize = length(first(R))
+    # every cell will appear several times (on average)
+    pdecay /= neigsize
     for i in 1:ncells
         # pick a cell
         I = rand(C)

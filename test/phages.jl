@@ -11,5 +11,6 @@
 
     @test_throws AssertionError updatephages!(grid, R, pdecay=1.2)
     @test sum(updatephages!(grid, R, pdecay=0.6)) < nphages
-    @test sum(updatephages!(grid, R, poissonapprox=true, pdecay=1)) == 0
+    @test sum(updatephages!(grid, R, poissonapprox=true, pdecay=0.1)) < nphages
+    @test sum(updatephages!(grid, R, pdecay=1.0)) == 0
 end
