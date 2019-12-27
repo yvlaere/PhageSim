@@ -32,6 +32,7 @@ function updatephages!(grid::AbstractArray{T} where {T<:Integer},
         # pick a cell
         I = rand(C)
         nphages = sum(grid[R[I]])
+        nphages > 0 || continue  # only do the next if there are phages
         if !poissonapprox
             if pdecay > 0.0
                 nphages = rand(Binomial(nphages, 1.0-pdecay))
