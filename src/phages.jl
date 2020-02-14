@@ -10,6 +10,8 @@ Functions to model the spread of the phages.
 
 using Distributions
 
+export updatephages!
+
 """
 updatephages!(grid::AbstractArray{T} where {T<:Integer};
                         R::Integer=1,
