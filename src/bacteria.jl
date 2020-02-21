@@ -11,7 +11,7 @@ phages.
 
 export AbstractBacterium, Bacterium, BactGrid
 export isbacterium, species, copy, nbacteria, emptybactgrid, phage, haslatent
-export BacteriaRules, updatebacteria!
+export AbstractBacteriaRules, BacteriaRules, updatebacteria!
 
 
 abstract type AbstractBacterium end
@@ -74,42 +74,3 @@ function updatebact(s1::AbstractBacterium, s2::Nothing, bacteriarules::BacteriaR
         return s1, s2
     end
 end
-
-
-#=
-function updatebacteria!(bactgrid, phagegrid; R=1, pinfect=0.9, burstsize=10)
-    pmove = 0.6
-    preproduce = 0.2
-    bactcoors = Set(findall(isbacterium, bactgrid))
-    nbacts = length(bactcoors)
-    C = CartesianIndices(bactgrid)
-    Ifirst, Ilast = first(C), last(C)
-    IR = R * Ifirst
-    for i in 1:nbacts
-        I = rand(bactcoors)
-        delete!(bactcoors, I)
-        # check infections
-        nphages = phagegrid[I]
-        if nphages > 0 && rand() > (1.0-pinfect)^nphages
-            bactgrid[I] = nothing
-            phagegrid[I] += burstsize - 1  #IDEA: change by Poison?
-            continue
-        end
-        region = max(Ifirst, I-IR):min(Ilast, I+IR)
-        # determine action
-        r = rand()
-        if r < pmove
-            Inew = rand(region)
-            if bactgrid[Inew] == nothing
-                bactgrid[I], bactgrid[Inew] = bactgrid[Inew], bactgrid[I]
-            end
-        else r < pmove + preproduce
-            Inew = rand(region)
-            if bactgrid[Inew] == nothing
-                bactgrid[Inew] = copy(bactgrid[I])
-            end
-        end
-    end
-    return bactgrid
-end
-=#

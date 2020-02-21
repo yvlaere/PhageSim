@@ -61,7 +61,7 @@ function updatephages!(grid::AbstractArray{T} where {T<:Integer},
     IR = R * oneunit(Ifirst)
     neigsize = (2R + 1)^2
     if nsteps isa Nothing
-        nsteps = ncells
+        nsteps = ncells ÷ neigsize
     end
     for i in 1:nsteps
         # pick a cell

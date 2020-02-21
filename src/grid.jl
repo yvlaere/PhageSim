@@ -1,12 +1,15 @@
 #=
 Created on Friday 27 December 2019
-Last update: -
+Last update: Friday 21 Feb 2020
 
 @author: Michiel Stock
 michielfmstock@gmail.com
 
 Function for working with grids
 =#
+
+export randnonident
+export periodic, neighbors, regions
 
 CI = CartesianIndex
 
@@ -49,4 +52,18 @@ function regions(A::AbstractArray)
     per = I -> periodic(I, Ifirst, Ilast)
     R = [per.([I] .+ D) for I in C]
     return R
+end
+
+
+"""
+    randnonident(I, set)
+
+Returns a random element `N` from `set` such that `N != I`.
+Used to sample from a region.
+"""
+function randnonident(I, set)
+    while true
+        N = rand(set)
+        N != I && return N
+    end
 end
