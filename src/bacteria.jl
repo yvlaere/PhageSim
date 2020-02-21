@@ -10,8 +10,9 @@ phages.
 =#
 
 export AbstractBacterium, Bacterium, BactGrid
-export isbacterium, species, copy, nbacteria, emptybactgrid, phage
-export updatebacteria!
+export isbacterium, species, copy, nbacteria, emptybactgrid, phage, haslatent
+export BacteriaRules, updatebacteria!
+
 
 abstract type AbstractBacterium end
 
@@ -19,6 +20,8 @@ struct Bacterium <: AbstractBacterium
     species::Int  # decribes the species of the bacterium
     phage::Int  # either carries a latent phage (i) or not (0)
 end
+
+Bacterium(species::Int) = Bacterium(species, 0)
 
 """Structure of bacterial grid"""
 BactGrid = Array{Union{Nothing, Bacterium}}
@@ -40,7 +43,10 @@ struct BacteriaRules <: AbstractBacteriaRules
     pmove::Float64
     pdie::Float64
     function BacteriaRules(prepr, pmove, pdie)
-        @assert prepr ≥ 0 && pmove ≥ 0 && pdie ≥ 0 && +(prepr, pmove, pdie) ≤ 1 "behavious of the bacteria should be valid probabilites"
+        @assert prepr ≥ 0 &&
+                pmove ≥ 0 &&
+                pdie ≥ 0 &&
+                +(prepr, pmove, pdie) ≤ 1 "behaviour of the bacteria should be valid probabilites"
         new(prepr, pmove, pdie)
     end
 end
@@ -68,8 +74,6 @@ function updatebact(s1::AbstractBacterium, s2::Nothing, bacteriarules::BacteriaR
         return s1, s2
     end
 end
-
-
 
 
 #=
