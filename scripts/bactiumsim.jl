@@ -1,6 +1,6 @@
 #=
 Created on Friday 31 January 2020
-Last update: -
+Last update: Friday 21 Feb 2020
 
 @author: Michiel Stock
 michielfmstock@gmail.com
@@ -18,6 +18,10 @@ N = 50
 ninitbact = 25
 ninitphages = 10
 
+bactrules = BacteriaRules(0.4, 0.2, 0.1)
+phagerules = PhageRules(0.2, 2)
+interactrules = InteractionRules([0.8], 5)
+
 # init the bacteria
 bactgrid = BactGrid(nothing, N, N)
 bactgrid[rand(CartesianIndices(bactgrid), ninitbact)] .= [Bacterium(1) for i in 1:ninitbact]
@@ -27,7 +31,7 @@ phagegrid = zeros(Int, N, N)
 phagegrid[rand(CartesianIndices(phagegrid), ninitphages)] .= 10
 
 anim = @animate for t=1:tsteps+1
-    heatmap(1isbacterium.(bactgrid), color=:Blues, colorbar=:none, framestyle=:none)
+    heatmap(isbacterium.(bactgrid), color=:Blues, colorbar=:none, framestyle=:none)
     locphage = Tuple.(findall(x-> x> 0, phagegrid))
     scatter!([x for (x, y) in locphage], [y for (x, y) in locphage],
         color=:orange, alpha=0.5, label="", markersize=0.2)
@@ -36,8 +40,8 @@ anim = @animate for t=1:tsteps+1
     status = "step $t\n $(nbacts) bacteria, $(nphages) particles"
     println(status)
     title!(status)
-    updatephages!(phagegrid, R=1, pdecay=pdecay)
-    updatebacteria!(bactgrid, phagegrid, burstsize=3, pinfect=0.8)
+    updatephages!(phagegrid, phagerules)
+    update!(bactgrid, [phagegrid], bactrules, phagerules, interactrules)
 end
 
 gif(anim, plotsdir("bactphage.gif"), fps = 10)
