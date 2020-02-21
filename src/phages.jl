@@ -25,11 +25,11 @@ struct PhageRules <: AbstractPhageRules
 end
 
 """
-    phagedecay(nphages, phagerules::PhageRule)
+    phagedecay(nphages, phagerules::PhageRules)
 
 Samples the number of phages after applying decay
 """
-function phagedecay(nphages, phagerules::PhageRule)
+function phagedecay(nphages, phagerules::PhageRules)
     nphages == 0 && return nphages
     psurv = 1.0 - phagerules.pdecay
     psurv == 0.0 && return 0

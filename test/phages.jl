@@ -6,11 +6,10 @@
     nphages = sum(grid)
 
     # check mass balances
-    @test sum(updatephages!(grid)) == nphages
+    @test sum(updatephages!(grid, PhageRules(0.0))) == nphages
 
 
-    @test_throws AssertionError updatephages!(grid, pdecay=1.2)
-    @test sum(updatephages!(grid, pdecay=0.6)) < nphages
-    @test sum(updatephages!(grid, poissonapprox=true, pdecay=0.1)) < nphages
-    @test sum(updatephages!(grid, pdecay=1.0)) == 0
+    @test_throws AssertionError updatephages!(grid, PhageRules(-0.01))
+    @test sum(updatephages!(grid, PhageRules(0.6))) < nphages
+    @test sum(updatephages!(grid, PhageRules(0.1), poissonapprox=true)) < nphages
 end
