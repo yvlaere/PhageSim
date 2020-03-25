@@ -1,6 +1,6 @@
 #=
 Created on Saturday 28 December 2019
-Last update: Friday 14 February 2020
+Last update: Wednesday 26 March 2020
 
 @author: Michiel Stock
 michielfmstock@gmail.com
@@ -10,7 +10,7 @@ phages.
 =#
 
 export AbstractBacterium, Bacterium, BactGrid
-export isbacterium, species, copy, nbacteria, emptybactgrid, phage, haslatent
+export isbacterium, species, copy, nbacteria, emptybactgrid, prophage, haslatent
 export AbstractBacteriaRules, BacteriaRules, updatebacteria!
 
 
@@ -29,7 +29,7 @@ emptybactgrid(dims...) = Array{Union{Nothing, Bacterium}}(nothing, dims...)
 
 isbacterium(state) = state isa AbstractBacterium
 haslatent(bact::Bacterium) = bact.phage != 0
-phage(bact::Bacterium) = bact.phage
+prophage(bact::Bacterium) = bact.phage
 species(bact::Bacterium) = bact.species
 species(bact::Bacterium, i::Int) = bact.species == i
 species(::Nothing) = missing
@@ -43,7 +43,8 @@ struct BacteriaRules <: AbstractBacteriaRules
     pmove::Float64
     pdie::Float64
     function BacteriaRules(prepr, pmove, pdie)
-        @assert insimplex(prepr, pmove, pdie) "behaviour of the bacteria should be valid probabilites"
+        @assert +(prepr, pmove, pdie) ≤ 1.0 &&
+                all((prepr, pmove, pdie) .≥ 0) "behaviour of the bacteria should be valid probabilites"
         new(prepr, pmove, pdie)
     end
 end

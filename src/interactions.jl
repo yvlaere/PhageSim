@@ -1,6 +1,6 @@
 #=
 Created on Friday 21 Feb 2020
-Last update: -
+Last update: Wednesday 26 March 2020
 
 @author: Michiel Stock
 michielfmstock@gmail.com
@@ -8,14 +8,17 @@ michielfmstock@gmail.com
 Model the interactions between bacteria and their phages
 =#
 
-export AbstractInteractionRules, InteractionRules
+export AbstractInteractionRules, LyticRules
 export update!
 
 using Random, Distributions
 
 abstract type AbstractInteractionRules end
 
-struct InteractionRules{TA, TB} <: AbstractInteractionRules
+"""
+Rules for when only a lytic life cycle is present.
+"""
+struct LyticRules{TA, TB} <: AbstractInteractionRules
     Pinf::TA  # matrix to determine the chance of infection host-phage
     burstsize::TB
 end
