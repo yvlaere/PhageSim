@@ -43,10 +43,7 @@ struct BacteriaRules <: AbstractBacteriaRules
     pmove::Float64
     pdie::Float64
     function BacteriaRules(prepr, pmove, pdie)
-        @assert prepr ≥ 0 &&
-                pmove ≥ 0 &&
-                pdie ≥ 0 &&
-                +(prepr, pmove, pdie) ≤ 1 "behaviour of the bacteria should be valid probabilites"
+        @assert insimplex(prepr, pmove, pdie) "behaviour of the bacteria should be valid probabilites"
         new(prepr, pmove, pdie)
     end
 end
