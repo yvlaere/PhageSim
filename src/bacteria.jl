@@ -11,6 +11,7 @@ phages.
 
 export AbstractBacterium, Bacterium, BactGrid
 export isbacterium, species, copy, nbacteria, emptybactgrid, prophage, haslatent
+export density
 export AbstractBacteriaRules, BacteriaRules, updatebacteria!
 
 
@@ -30,11 +31,47 @@ emptybactgrid(dims...) = Array{Union{Nothing, Bacterium}}(nothing, dims...)
 isbacterium(state) = state isa AbstractBacterium
 haslatent(bact::Bacterium) = bact.phage != 0
 prophage(bact::Bacterium) = bact.phage
+prophage(bact::Bacterium, i::Int) = Bacterium(bact.species, i)
 species(bact::Bacterium) = bact.species
 species(bact::Bacterium, i::Int) = bact.species == i
 species(::Nothing) = missing
 copy(bact::Bacterium) = Bacterium(bact.species, bact.phage)
-nbacteria(bactgrid) = count(isbacterium, bactgrid)
+nbacteria(bactgrid::BactGrid) = count(isbacterium, bactgrid)
+nbacteria(bactgrid::BactGrid, sp::Int) = count(b->isbacterium(b) && species(b)==sp, bactgrid)
+
+# computing the global and local density of the bacteria
+
+"""
+    density(bactgrid::BactGrid)
+
+Computes the density of the bacteria in the grid, i.e., number of bacteria divided
+by the total size of the grid.
+"""
+density(bactgrid::BactGrid) = nbacteria(bactgrid) / length(bactgrid)
+
+"""
+    density(bactgrid::BactGrid, sp::Int)
+
+Computes the density of bacteria of species `sp` in the grid.
+"""
+density(bactgrid::BactGrid, sp::Int) = nbacteria(bactgrid, sp) / length(bactgrid)
+
+"""
+    density(bactgrid::BactGrid, I::CartesianIndex,
+                        sp::Union{Nothing,Int}=nothing; R::Int=1)
+
+Computes the local density of bacteria (or bacteria of species `sp` if provided)
+in the region with radius `R` around position `I`.
+"""
+function density(bactgrid::BactGrid, I::CartesianIndex,
+                    sp::Union{Nothing,Int}=nothing; R::Int=1)
+    C = CartesianIndices(bactgrid)
+    Ifirst, Ilast = first(C), last(C)
+    IR = R * oneunit(Ifirst)
+    region = max(I-IR, Ifirst):min(I+IR, Ilast)
+    sp isa Nothing && return density(bactgrid[region])
+    density(bactgrid[region], sp)
+end
 
 abstract type AbstractBacteriaRules end
 
