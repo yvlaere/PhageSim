@@ -10,7 +10,7 @@ Functions to model the spread of the phages.
 
 using Distributions
 
-export AbstractPhageRules, PhageRules, phagedecay, updatephages!
+export AbstractPhageRules, PhageRules, phagedecay, step_phages!
 
 abstract type AbstractPhageRules end
 
@@ -49,7 +49,7 @@ Updating the spread of the phages by means of random diffusion and decay as spec
 By setting `poissonapprox` to true, a Poisson approximation is used instead of the exact,
 but slower Multinomial distribution.
 """
-function updatephages!(grid::AbstractArray{T} where {T<:Integer},
+function step_phages!(grid::AbstractArray{T} where {T<:Integer},
                         phagerules::AbstractPhageRules;
                         poissonapprox=false,
                         nsteps::Union{Nothing,Int}=nothing

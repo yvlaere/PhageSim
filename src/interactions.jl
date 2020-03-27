@@ -9,7 +9,6 @@ Model the interactions between bacteria and their phages
 =#
 
 export AbstractInteractionRules, InteractionRules
-export update!
 
 using Random, Distributions
 
@@ -24,7 +23,7 @@ struct InteractionRules{TI,TB,TLG} <: AbstractInteractionRules
     plysogeny::TLG  # probability of entering the lysogentic cycle
     plysis::Float64  # probability that an infected bacterium lyses
     R::Int  # radius for quorum sensing
-    function InteractionRules(Pinf::AbstractMatrix, burstsize::Number,
+    function InteractionRules(Pinf, burstsize::Number,
             plysogeny::Union{BP,AbstractVector{BP}}=false,
             plysis=1.0, R=0)  where {BP <: Union{Bool, AbstractFloat}}
         @assert all(0 .≤ plysogeny .≤ 1) "All values for `plysogeny` should be Booleans or probabilities"
@@ -44,7 +43,7 @@ prophage or whether it will enter a lytic phase and kill its host immediately.
 """
 function lysogenic(bact::AbstractBacterium, phagetype::Int,
                     interactionrules::AbstractInteractionRules)
-    plysogeny = interactionrules.lysogeny
+    plysogeny = interactionrules.plysogeny
     plysogeny isa Bool && return plysogeny
     plysogeny isa Number && return rand() < plysogeny
     plysogeny isa AbstractVector{Bool} && return plysogeny[phagetype]
@@ -86,66 +85,9 @@ function infects(bact::AbstractBacterium, phagetype::Int, nphages,
     return (1.0 - p)^nphages < rand()
 end
 
-# compute the burstsize of an infected bacterium
-# sampled by means of a Poisson distribution
+"""
+Compute the burstsize of an infected bacterium, sampled from a Poisson
+distribution.
+"""
 burstsize(bact::AbstractBacterium, phagetype,
             interactionrules::AbstractInteractionRules) = rand(Poisson(interactionrules.burstsize))
-
-
-function update!(grid::BactGrid,
-                phagegrids,
-                bactrules::AbstractBacteriaRules,
-                phagerules::AbstractPhageRules,
-                interactionrules::AbstractInteractionRules)
-    # number of phages
-    nphagetypes = length(phagegrids)
-    # list of phage types, used for effecient shuffling
-    phagetypes = collect(1:nphagetypes)
-    bactcoors = Set(findall(isbacterium, grid))
-    nbacts = length(bactcoors)
-    C = CartesianIndices(grid)
-    Ifirst, Ilast = first(C), last(C)
-    IR = oneunit(Ifirst)
-    for i in 1:nbacts
-        I = rand(bactcoors)
-        sI = bact = grid[I]  # state at position I
-        delete!(bactcoors, I)
-        # first check if the bacterium has a laten phage
-        if haslatent(bact)
-            # if it has a latent phage, it might lyse now
-            if lyses(bact, grid, I, interactionrules::AbstractInteractionRules)
-                # bacterium lyses, bye!
-                phagetype = prophage(bact)
-                phagegrids[phagetype][I] += burstsize(bact, phagetype, interactionrules)
-                grid[I] = nothing
-                sI = nothing
-                continue
-            end
-        else
-            # no latent phage, so check if there are any phages that might attack
-            for phagetype in randperm!(phagetypes)
-                nphages = phagegrids[phagetype][I]
-                # if there are phages, will they infect the bacterium?
-                if nphages > 0 && infects(bact, phagetype, nphages, interactionrules)
-                    # yes, but lysogentic or lytic?
-                    if lysogenic(bact, phagetype, interactionrules)
-                        bact = prophage(bact, phagetype)  # add a prophage
-                        grid[I] = bact
-                        phagegrids[phagetype][I] -= 1
-                    else
-                        grid[I] = nothing  # kill bacterium
-                        phagegrids[phagetype][I] += burstsize(bact, phagetype, interactionrules) - 1
-                        break
-                    end
-                end
-            end
-        end
-        isbacterium(grid[I]) || continue  # if killed, skip the rest
-        # determine action
-        neighborhood = max(Ifirst, I-IR):min(Ilast, I+IR)
-        N = randnonident(I, neighborhood)
-        sN = grid[N]
-        sI, sN = updatebact(sI, sN, bactrules)
-        grid[I], grid[N] = sI, sN
-    end
-end

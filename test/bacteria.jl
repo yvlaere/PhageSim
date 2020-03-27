@@ -21,6 +21,7 @@
     @test density(bactgrid, 1) ≈ 2 / 100
     @test density(bactgrid, CartesianIndex(8, 2)) == 0
     @test density(bactgrid, CartesianIndex(4, 4), R=1) ≈ 2 / 9
+    @test density(bactgrid, CartesianIndex(4, 4), R=0) ≈ 1
     @test density(bactgrid, CartesianIndex(4, 4), R=2) ≈ 3 / 25
     @test density(bactgrid, CartesianIndex(4, 4), 1, R=2) ≈ 2 / 25
 
