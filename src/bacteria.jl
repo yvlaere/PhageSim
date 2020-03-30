@@ -28,17 +28,72 @@ Bacterium(species::Int) = Bacterium(species, 0)
 BactGrid = Array{Union{Nothing, Bacterium}}
 emptybactgrid(dims...) = Array{Union{Nothing, Bacterium}}(nothing, dims...)
 
+"""Check if a state is a `AbstractBacterium`"""
 isbacterium(state) = state isa AbstractBacterium
+
+"""
+    haslatent(bact::Bacterium)
+
+Test whether a bacterium has a laten prophage
+"""
 haslatent(bact::Bacterium) = bact.phage != 0
-prophage(bact::Bacterium) = bact.phage
+
+"""
+    prophage(bact::Bacterium)
+
+Return the prophage of a bacterium. Return `missing` if bact has no prophage.
+"""
+prophage(bact::Bacterium) = bact.phage == 0 ? missing : bact.phage
+
+"""
+    prophage(bact::Bacterium, i::Int)
+
+Returns a NEW bacterium with a prophage of type `i`.
+"""
 prophage(bact::Bacterium, i::Int) = Bacterium(bact.species, i)
+
+"""
+    species(bact::Bacterium)
+
+Returns the species of a bacterium.
+"""
 species(bact::Bacterium) = bact.species
+
+"""
+    species(bactgrid::BactGrid)
+
+Returns a list of the species of bacteria in a grid.
+"""
 species(bactgrid::BactGrid) = bactgrid .|> species |> skipmissing |> unique |> sort!
-species(bact::Bacterium, i::Int) = bact.species == i
-species(bactgrid::BactGrid, i::Int) = count(sp-> sp==i, skipmissing(species.(bactgrid)))
+
+"""
+    species(bact::Bacterium, sp::Int)
+
+Test if `bact` if of species `sp`.
+"""
+species(bact::Bacterium, sp::Int) = bact.species == sp
+
 species(::Nothing) = missing
+
+"""
+    copy(bact::Bacterium)
+
+Make a copy of a bacterium.
+"""
 copy(bact::Bacterium) = Bacterium(bact.species, bact.phage)
+
+"""
+    nbacteria(bactgrid::BactGrid)
+
+Counts the number of bacteria in `bactgrid`.
+"""
 nbacteria(bactgrid::BactGrid) = count(isbacterium, bactgrid)
+
+"""
+    nbacteria(bactgrid::BactGrid, sp::Int)
+
+Counts the number of bacteria of species `sp` in `bactgrid`.
+"""
 nbacteria(bactgrid::BactGrid, sp::Int) = count(b->isbacterium(b) && species(b)==sp, bactgrid)
 
 # computing the global and local density of the bacteria
@@ -88,6 +143,7 @@ struct BacteriaRules <: AbstractBacteriaRules
     end
 end
 
+# TODO: generalize BacteriaRules such that bacteria can exhibit individual behaviour
 
 updatebact(s1::AbstractBacterium, s2::AbstractBacterium, bacteriarules::BacteriaRules) = s1, s2
 
