@@ -13,14 +13,14 @@ quickactivate(@__DIR__, "PhageSim")
 using PhageSim, Plots
 
 pdecay = 0.1
-tsteps = 500
-N = 50
+tsteps = 1000
+N = 100
 ninitbact = 25
 ninitphages = 10
 
 bactrules = BacteriaRules(0.4, 0.2, 0.1)
 phagerules = PhageRules(0.2, 2)
-interactrules = InteractionRules([0.8], 5)
+interactrules = InteractionRules(reshape([0.8], 1, 1), 5)
 
 # init the bacteria
 bactgrid = BactGrid(nothing, N, N)
@@ -40,8 +40,8 @@ anim = @animate for t=1:tsteps+1
     status = "step $t\n $(nbacts) bacteria, $(nphages) particles"
     println(status)
     title!(status)
-    updatephages!(phagegrid, phagerules)
-    update!(bactgrid, [phagegrid], bactrules, phagerules, interactrules)
+    step_phages!(phagegrid, phagerules)
+    step_bacteria!(bactgrid, [phagegrid], bactrules, phagerules, interactrules)
 end
 
 gif(anim, plotsdir("bactphage.gif"), fps = 10)

@@ -1,6 +1,6 @@
 #=
 Created on Friday 31 January 2020
-Last update: Friday 21 Feb 2020
+Last update: Friday 27 March 2020
 
 @author: Michiel Stock
 michielfmstock@gmail.com
@@ -14,11 +14,11 @@ quickactivate(@__DIR__, "PhageSim")
 using PhageSim, Plots
 
 pdecay = 0.1
-pinfect = 0.1
+pinfect = 0.2
 tsteps = 500
-N = 100
+N = 200
 ninitbact = 100
-ninitphages = 10
+ninitphages = 100
 bustsize = 20
 
 bactrules = BacteriaRules(0.4, 0.4, 0.1)
@@ -40,11 +40,11 @@ end
 anim = @animate for t=0:tsteps
     pbact = heatmap(species.(bactgrid), color=:darktest, colorbar=:none, framestyle=:none,
                 title="bacteria (step $t)");
-    pphagues1 = heatmap(phagegrids[1], color=:Reds, framestyle=:none,
+    pphagues1 = heatmap(phagegrids[1], color=:Blues, framestyle=:none,
                 title="Phage sp. 1\n $(sum(phagegrids[1])) particles");
-    pphagues2 = heatmap(phagegrids[2], color=:Greens, framestyle=:none,
+    pphagues2 = heatmap(phagegrids[2], color=:Reds, framestyle=:none,
                 title="Phage sp. 2\n $(sum(phagegrids[2])) particles");
-    pphagues3 = heatmap(phagegrids[3], color=:Blues, framestyle=:none,
+    pphagues3 = heatmap(phagegrids[3], color=:Greens, framestyle=:none,
                 title="Phage sp. 3\n $(sum(phagegrids[3])) particles");
     plot(pbact, pphagues1, pphagues2, pphagues3)
     nbacts = nbacteria(bactgrid)
@@ -52,9 +52,9 @@ anim = @animate for t=0:tsteps
     #println(status)
     #title!(status)
     for phagegrid in phagegrids
-        updatephages!(phagegrid, phagerules)
+        step_phages!(phagegrid, phagerules)
     end
-    update!(bactgrid, phagegrids, bactrules, phagerules, interactrules)
+    step_bacteria!(bactgrid, phagegrids, bactrules, phagerules, interactrules)
 end
 
 gif(anim, plotsdir("bactphage3sp.gif"), fps = 10)
