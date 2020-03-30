@@ -86,7 +86,8 @@ end
                     interactionrules::AbstractInteractionRules,
                     nsteps::Int;
                     resultfun::union{Function,Nothing}=nothing,
-                    store_every::Int=1
+                    store_every::Int=1,
+                    resfunkwargs...
                     )
 
 Perform a simulation of `nsteps`. Optionally provide a function `resultfun`
@@ -107,7 +108,7 @@ function simulate!(grid::BactGrid,
     # should we store any results?
     if !isnothing(resultfun)
         # compute the first result
-        res0 = resultfun(grid, phagegrids)
+        res0 = resultfun(grid, phagegrids; resfunkwargs...)
         results = Array{typeof(res0)}(undef, nsteps ÷ store_every + 1)
         results[1] = res0
     end
