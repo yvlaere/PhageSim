@@ -16,6 +16,7 @@
     # creates new bacteria with a phage
     @test prophage(bactgrid[3, 3], 2) |> prophage == 2
     @test species(bactgrid[4, 4]) == 1
+    @test Set(species(bactgrid)) == Set([1, 2])
 
     @test density(bactgrid) ≈ 3 / 100
     @test density(bactgrid, 1) ≈ 2 / 100

@@ -1,6 +1,6 @@
 #=
 Created on Saturday 28 December 2019
-Last update: Wednesday 26 March 2020
+Last update: Monday 30 March 2020
 
 @author: Michiel Stock
 michielfmstock@gmail.com
@@ -33,6 +33,7 @@ haslatent(bact::Bacterium) = bact.phage != 0
 prophage(bact::Bacterium) = bact.phage
 prophage(bact::Bacterium, i::Int) = Bacterium(bact.species, i)
 species(bact::Bacterium) = bact.species
+species(bactgrid::BactGrid) = bactgrid .|> species |> skipmissing |> unique
 species(bact::Bacterium, i::Int) = bact.species == i
 species(::Nothing) = missing
 copy(bact::Bacterium) = Bacterium(bact.species, bact.phage)
