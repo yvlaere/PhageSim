@@ -1,6 +1,6 @@
 #=
 Created on Wednesday 26 March 2020
-Last update: -
+Last update: Monday 30 March 2020
 
 @author: Michiel Stock
 michielfmstock@gmail.com
@@ -91,7 +91,8 @@ end
 
 Perform a simulation of `nsteps`. Optionally provide a function `resultfun`
 with as inputs the bacteria grid and the phagegrids to store intermediate
-results every `store_every` steps.
+results every `store_every` steps. If `resultfun` is a function with keyword
+arguments, these can also be provided.
 """
 function simulate!(grid::BactGrid,
                 phagegrids,
@@ -100,7 +101,8 @@ function simulate!(grid::BactGrid,
                 interactionrules::AbstractInteractionRules,
                 nsteps::Int;
                 resultfun::Union{Function,Nothing}=nothing,
-                store_every::Int=1
+                store_every::Int=1,
+                resfunkwargs...
                 )
     # should we store any results?
     if !isnothing(resultfun)
@@ -117,7 +119,7 @@ function simulate!(grid::BactGrid,
             step_phages!(phagegrid, phagerules)
         end
         !isnothing(resultfun) && (t % store_every == 0) && (
-                results[t ÷ store_every + 1] = resultfun(grid, phagegrids)
+                results[t ÷ store_every + 1] = resultfun(grid, phagegrids; resfunkwargs...)
         )
     end
     !isnothing(resultfun) && return results
