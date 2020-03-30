@@ -33,8 +33,9 @@ haslatent(bact::Bacterium) = bact.phage != 0
 prophage(bact::Bacterium) = bact.phage
 prophage(bact::Bacterium, i::Int) = Bacterium(bact.species, i)
 species(bact::Bacterium) = bact.species
-species(bactgrid::BactGrid) = bactgrid .|> species |> skipmissing |> unique
+species(bactgrid::BactGrid) = bactgrid .|> species |> skipmissing |> unique |> sort!
 species(bact::Bacterium, i::Int) = bact.species == i
+species(bactgrid::BactGrid, i::Int) = count(sp-> sp==i, skipmissing(species.(bactgrid)))
 species(::Nothing) = missing
 copy(bact::Bacterium) = Bacterium(bact.species, bact.phage)
 nbacteria(bactgrid::BactGrid) = count(isbacterium, bactgrid)
