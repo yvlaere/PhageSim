@@ -22,7 +22,7 @@ ninitphages = 100
 bustsize = 20
 
 bactrules = BacteriaRules(0.4, 0.4, 0.1)
-phagerules = PhageRules(pdecay, bustsize)
+phagerules = PhageRules(pdecay, 5)
 interactrules = InteractionRules([pinfect 0 0; 0 pinfect 0; 0 0 pinfect], bustsize)
 
 # init the bacteria
