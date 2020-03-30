@@ -117,7 +117,7 @@ function simulate!(grid::BactGrid,
             step_phages!(phagegrid, phagerules)
         end
         !isnothing(resultfun) && (t % store_every == 0) && (
-                results[t % store_every + 1] = resultfun(grid, phagegrids)
+                results[t ÷ store_every + 1] = resultfun(grid, phagegrids)
         )
     end
     !isnothing(resultfun) && return results
