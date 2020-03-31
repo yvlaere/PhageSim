@@ -42,7 +42,7 @@ Rphages = 5  # mixing radius for the dispersion of the phages
 # matrix to determine the chance of infection host-phage, nbact x nphages
 Pinf =  [0.2 0.01 0.01; 0.01 0.2 0.01; 0.01 0.01 0.2]
 burstsize = 10  # average number of virons
-plysogeny = 0  # probability of entering the lysogentic cycle, either probability
+plysogeny = 0.0  # probability of entering the lysogentic cycle, either probability
 # for all phages or a list of probabilities, one for each phage
 plysis = 0.4  # probability that an infected bacterium lyses in every step
 Rqs = 10  # radius for quorum sensing, lysis probability is proportional to the local density
