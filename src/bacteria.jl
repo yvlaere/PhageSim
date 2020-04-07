@@ -12,7 +12,8 @@ phages.
 export AbstractBacterium, Bacterium, BactGrid
 export isbacterium, species, copy, nbacteria, emptybactgrid, prophage, haslatent
 export density
-export AbstractBacteriaRules, BacteriaRules, updatebacteria!
+export AbstractBacteriaRules, BacteriaRules, HeteroBacteriaRules
+export bacteriaprobs, updatebacteria!
 
 
 abstract type AbstractBacterium end
@@ -132,36 +133,72 @@ end
 
 abstract type AbstractBacteriaRules end
 
+"""
+Rules for when all bacteria behave the same.
+"""
 struct BacteriaRules <: AbstractBacteriaRules
     prepr::Float64
     pmove::Float64
     pdie::Float64
-    function BacteriaRules(prepr, pmove, pdie)
+    function BacteriaRules(prepr::Float64, pmove::Float64, pdie::Float64)
         @assert +(prepr, pmove, pdie) ≤ 1.0 &&
                 all((prepr, pmove, pdie) .≥ 0) "behaviour of the bacteria should be valid probabilites"
         new(prepr, pmove, pdie)
     end
 end
 
-# TODO: generalize BacteriaRules such that bacteria can exhibit individual behaviour
+"""
+    bacteriaprobs(br::BacteriaRules, bact::AbstractBacterium)
 
-updatebact(s1::AbstractBacterium, s2::AbstractBacterium, bacteriarules::BacteriaRules) = s1, s2
+Get the behaviour parameters for a specific bacterium.
+"""
+bacteriaprobs(br::BacteriaRules, bact::AbstractBacterium) = (br.prepr, br.pmove, br.pdie)
 
 """
-    updatebact(s1::AbstractBacterium, s2::Nothing, bacteriarules::BacteriaRules)
+Rules for when bacteria might show different behaviours.
+"""
+struct HeteroBacteriaRules <: AbstractBacteriaRules
+    prepr::Array{Float64,1}
+    pmove::Array{Float64,1}
+    pdie::Array{Float64,1}
+end
+
+function BacteriaRules(prepr::Array{Float64,1}, pmove::Array{Float64,1}, pdie::Array{Float64,1})
+    @assert all(.+(prepr, pmove, pdie) .≤ 1.0) && all(prepr .≥ 0) && all(pmove .≥ 0) &&
+             all(pdie .≥ 0) "behaviour of the bacteria should be valid probabilites"
+    HeteroBacteriaRules(prepr, pmove, pdie)
+end
+
+"""
+    bacteriaprobs(br::BacteriaRules, bact::AbstractBacterium)
+
+Get the behaviour parameters for a specific bacterium.
+"""
+function bacteriaprobs(br::HeteroBacteriaRules, bact::AbstractBacterium)
+    sp = species(bact)
+    return (br.prepr[sp], br.pmove[sp], br.pdie[sp])
+end
+
+
+updatebact(s1::AbstractBacterium, s2::AbstractBacterium, bacteriarules::AbstractBacteriaRules) = s1, s2
+
+"""
+    updatebact(s1::AbstractBacterium, s2::Nothing, bacteriarules::AbstractBacteriaRules)
 
 Rules for updating the bacteria without the phage component.
 """
-function updatebact(s1::AbstractBacterium, s2::Nothing, bacteriarules::BacteriaRules)
+function updatebact(s1::AbstractBacterium, s2::Nothing, bacteriarules::AbstractBacteriaRules)
+    # get the rules
+    prepr, pmove, pdie = bacteriaprobs(bacteriarules, s1)
     r = rand()
-    if r ≤ bacteriarules.prepr
+    if r ≤ prepr
         # reproduce
         return s1, copy(s1)
-    elseif r ≤ bacteriarules.prepr + bacteriarules.pmove
+    elseif r ≤ prepr + pmove
         # move
         return nothing, s1
         # die
-    elseif r ≤ bacteriarules.prepr + bacteriarules.pmove + bacteriarules.pdie
+    elseif r ≤ prepr + pmove + pdie
         return nothing, nothing
     else
         return s1, s2
