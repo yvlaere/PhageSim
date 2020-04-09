@@ -180,7 +180,15 @@ function bacteriaprobs(br::HeteroBacteriaRules, bact::AbstractBacterium)
 end
 
 
-updatebact(s1::AbstractBacterium, s2::AbstractBacterium, bacteriarules::AbstractBacteriaRules) = s1, s2
+function updatebact(s1::AbstractBacterium, s2::AbstractBacterium, bacteriarules::AbstractBacteriaRules)
+    prepr, pmove, pdie = bacteriaprobs(bacteriarules, s1)
+    if rand() < pdie
+        return nothing, s2
+    else
+        return s1, s2
+    end
+end
+
 
 """
     updatebact(s1::AbstractBacterium, s2::Nothing, bacteriarules::AbstractBacteriaRules)

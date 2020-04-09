@@ -63,7 +63,7 @@ function lyses(bact::AbstractBacterium, grid::BactGrid, I::CartesianIndex,
     # compute the local density
     R = interactionrules.R
     sp = species(bact)
-    ρ = density(bactgrid, I, sp, R=R)
+    ρ = density(grid, I, sp, R=R)
     # so the probability of lysis is proportional to the density
     # THE BACTERIUM ITSELF INCLUDED!
     return rand() < ρ * interactionrules.plysis
