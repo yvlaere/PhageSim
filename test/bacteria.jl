@@ -36,5 +36,11 @@
         @test heterobactrules isa AbstractBacteriaRules
         @test heterobactrules isa HeteroBacteriaRules
         @test bacteriaprobs(heterobactrules, bact) == (0.2, 0.3, 0.3)
+        prophbr = BacteriaRules((0.1, 0.2, 0.4), (0.1, 0.3, 0.1))
+        @test prophbr isa AbstractBacteriaRules
+        @test prophbr isa ProphageBacteriaRules
+        @test bacteriaprobs(prophbr, bact) == (0.1, 0.2, 0.4)
+        @test bacteriaprobs(prophbr, prophage(bact, 1)) == (0.1, 0.3, 0.1)
+
     end
 end

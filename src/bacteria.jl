@@ -12,7 +12,7 @@ phages.
 export AbstractBacterium, Bacterium, BactGrid
 export isbacterium, species, copy, nbacteria, emptybactgrid, prophage, haslatent
 export density
-export AbstractBacteriaRules, BacteriaRules, HeteroBacteriaRules
+export AbstractBacteriaRules, BacteriaRules, HeteroBacteriaRules, ProphageBacteriaRules
 export bacteriaprobs, updatebacteria!
 
 
@@ -155,7 +155,7 @@ Get the behaviour parameters for a specific bacterium.
 bacteriaprobs(br::BacteriaRules, bact::AbstractBacterium) = (br.prepr, br.pmove, br.pdie)
 
 """
-Rules for when bacteria might show different behaviours.
+Rules for when species of bacteria might show different behaviours.
 """
 struct HeteroBacteriaRules <: AbstractBacteriaRules
     prepr::Array{Float64,1}
@@ -170,6 +170,16 @@ function BacteriaRules(prepr::Array{Float64,1}, pmove::Array{Float64,1}, pdie::A
 end
 
 """
+Rules for when a bacterium with a prophage exhibits a different behaviour from
+a bacterium without a prophage.
+"""
+struct ProphageBacteriaRules <: AbstractBacteriaRules
+    probsnoinf::Tuple{Float64,Float64,Float64}
+    probsinf::Tuple{Float64,Float64,Float64}
+    precover::Float64
+end
+
+"""
     bacteriaprobs(br::BacteriaRules, bact::AbstractBacterium)
 
 Get the behaviour parameters for a specific bacterium.
@@ -179,6 +189,30 @@ function bacteriaprobs(br::HeteroBacteriaRules, bact::AbstractBacterium)
     return (br.prepr[sp], br.pmove[sp], br.pdie[sp])
 end
 
+function BacteriaRules(probsnoinf::Tuple{Float64,Float64,Float64},
+                probsinf::Tuple{Float64,Float64,Float64},
+                precover::Float64=0.0)
+    @assert sum(probsnoinf) ≤ 1.0 &&
+            all(probsnoinf .≥ 0) "behaviour of the bacteria should be valid probabilites"
+    @assert sum(probsinf) ≤ 1.0 &&
+            all(precover .≥ 0) "behaviour of the bacteria should be valid probabilites"
+    @assert 0 ≤ precover ≤ 1 "`precover` should be a valid probability"
+    ProphageBacteriaRules(probsnoinf, probsinf, precover)
+end
+
+"""
+    bacteriaprobs(br::ProphageBacteriaRules, bact::AbstractBacterium)
+
+Get the behaviour parameters depending on whether the bacterium has a prophage
+or not.
+"""
+function bacteriaprobs(br::ProphageBacteriaRules, bact::AbstractBacterium)
+    if haslatent(bact)
+        return br.probsinf
+    else
+        return br.probsnoinf
+    end
+end
 
 function updatebact(s1::AbstractBacterium, s2::AbstractBacterium, bacteriarules::AbstractBacteriaRules)
     prepr, pmove, pdie = bacteriaprobs(bacteriarules, s1)
