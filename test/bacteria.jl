@@ -27,6 +27,20 @@
     @test density(bactgrid, CartesianIndex(4, 4), R=2) ≈ 3 / 25
     @test density(bactgrid, CartesianIndex(4, 4), 1, R=2) ≈ 2 / 25
 
-    bactrules = BacteriaRules(0.1, 0.3, 0.0)
+    @testset "BacteriaRules" begin
+        bactrules = BacteriaRules(0.1, 0.3, 0.0)
+        bact = Bacterium(2, 0)
+        @test bactrules isa AbstractBacteriaRules
+        @test bacteriaprobs(bactrules, bact) == (0.1, 0.3, 0.0)
+        heterobactrules = BacteriaRules([0.1, 0.2, 0.4], [0.1, 0.3, 0.1], [0.2, 0.3, 0.2])
+        @test heterobactrules isa AbstractBacteriaRules
+        @test heterobactrules isa HeteroBacteriaRules
+        @test bacteriaprobs(heterobactrules, bact) == (0.2, 0.3, 0.3)
+        prophbr = BacteriaRules((0.1, 0.2, 0.4), (0.1, 0.3, 0.1))
+        @test prophbr isa AbstractBacteriaRules
+        @test prophbr isa ProphageBacteriaRules
+        @test bacteriaprobs(prophbr, bact) == (0.1, 0.2, 0.4)
+        @test bacteriaprobs(prophbr, prophage(bact, 1)) == (0.1, 0.3, 0.1)
 
+    end
 end

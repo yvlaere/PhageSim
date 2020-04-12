@@ -57,18 +57,19 @@ function step_bacteria!(grid::BactGrid,
                 if nphages > 0 && infects(bact, phagetype, nphages, interactionrules)
                     # yes, but lysogentic or lytic?
                     if lysogenic(bact, phagetype, interactionrules)
-                        bact = prophage(bact, phagetype)  # add a prophage
+                        bact = SI = prophage(bact, phagetype)  # add a prophage
                         grid[I] = bact
                         phagegrids[phagetype][I] -= 1
                     else
                         grid[I] = nothing  # kill bacterium
                         phagegrids[phagetype][I] += burstsize(bact, phagetype, interactionrules) - 1
-                        break
                     end
+                    break
                 end
             end
         end
-        isbacterium(grid[I]) || continue  # if killed, skip the rest
+        sI = grid[I]
+        isbacterium(sI) || continue  # if killed, skip the rest
         # determine action
         neighborhood = max(Ifirst, I-IR):min(Ilast, I+IR)
         N = randnonident(I, neighborhood)
