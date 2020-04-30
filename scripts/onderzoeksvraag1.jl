@@ -27,7 +27,7 @@ sit = [sit1, sit2, sit3, sit4, sit5, sit6]
 for i = 1:length(dens)
     for j = 1:length(sit)
 
-        name = "test"  # give a name to your simulation
+        name = "scenario" * string(i) * "situatie" * string(j)  # give a name to your simulation
 
         # PARAMETERS OF THE SIMULATION
         # ----------------------------
@@ -42,7 +42,7 @@ for i = 1:length(dens)
         # phages
         # -----
 
-        pdecay = 0.02  # probability that a viron decays
+        pdecay = 0.01  # probability that a viron decays
         Rphages = 5  # mixing radius for the dispersion of the phages
 
         # interactions
@@ -51,7 +51,6 @@ for i = 1:length(dens)
         # matrix to determine the chance of infection host-phage, nbact x nphages
         Pinf =  [0.2 0.01 0.01; 0.01 0.2 0.01; 0.01 0.01 0.2]
         burstsize = 10  # average number of virons
-
         plysogeny = sit[j][1]  # probability of entering the lysogentic cycle, either probability
         # for all phages or a list of probabilities, one for each phage
         plysis = sit[j][2]  # probability that an infected bacterium lyses in every step
@@ -61,9 +60,9 @@ for i = 1:length(dens)
         # simulation stuff
         # ----------------
 
-        nsteps = 1000
+        nsteps = 200
         D = 100  # size of the grid
-        ninitbact = 500
+        ninitbact = floor(Int64, dens[i][1])
         ninitphages = 100
 
         # PROCESSING THE PARAMETERS
@@ -127,3 +126,5 @@ for i = 1:length(dens)
         savefig(p, plotsdir(fname) * ".png")
     end
 end
+
+a = 3
