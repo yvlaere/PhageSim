@@ -27,6 +27,11 @@
     @test density(bactgrid, CartesianIndex(4, 4), R=2) ≈ 3 / 25
     @test density(bactgrid, CartesianIndex(4, 4), 1, R=2) ≈ 2 / 25
 
+    grid = initbactgrid(10, 10, nbacteria=5)
+
+    @test density(grid) ≈ 0.05
+    @test 0 < density(initbactgrid(10, 10, nbacteria=90, nspecies=2), 1) < 0.9
+
     @testset "BacteriaRules" begin
         bactrules = BacteriaRules(0.1, 0.3, 0.0)
         bact = Bacterium(2, 0)

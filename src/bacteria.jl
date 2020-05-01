@@ -9,9 +9,9 @@ Implementation of the bacteria. For the moment, does not yet contain latent
 phages.
 =#
 
-export AbstractBacterium, Bacterium, BactGrid
-export isbacterium, species, copy, nbacteria, emptybactgrid, prophage, haslatent
-export density
+export AbstractBacterium, Bacterium, BactGrid, initbactgrid
+export isbacterium, species, copy, nbacteria, prophage, haslatent
+export density, emptybactgrid, initbactgrid
 export AbstractBacteriaRules, BacteriaRules, HeteroBacteriaRules, ProphageBacteriaRules
 export bacteriaprobs, updatebacteria!
 
@@ -27,7 +27,29 @@ Bacterium(species::Int) = Bacterium(species, 0)
 
 """Structure of bacterial grid"""
 BactGrid = Array{Union{Nothing, Bacterium}}
-emptybactgrid(dims...) = Array{Union{Nothing, Bacterium}}(nothing, dims...)
+
+"""
+    emptybactgrid(dims::Int...)
+
+Generates an empty grid for the bacteria.
+"""
+emptybactgrid(dims::Int...) = Array{Union{Nothing, Bacterium}}(nothing, dims...)
+
+"""
+    initbactgrid(dims::Int...; nbacteria::Int=1, nspecies::Int=1)
+
+Generates an initial grid for the bacteria with `nbacteria` in total of `nspecies`
+different species, randomly distributed over the grid.
+"""
+function initbactgrid(dims::Int...; nbacteria::Int=1, nspecies::Int=1)
+    @assert 0 ≤ nbacteria ≤ prod(dims)
+    grid = emptybactgrid(dims...)
+    C = CartesianIndices(grid)
+    indices = shuffle(C)[1:nbacteria]
+    grid[indices] .= Bacterium.(rand(1:nspecies, nbacteria))
+    return grid
+end
+
 
 """Check if a state is a `AbstractBacterium`"""
 isbacterium(state) = state isa AbstractBacterium
@@ -178,6 +200,17 @@ struct ProphageBacteriaRules <: AbstractBacteriaRules
     probsinf::Tuple{Float64,Float64,Float64}
     precover::Float64
 end
+
+
+"""
+By default an infected phage cannot recover.
+"""
+recovers(bact::AbstractBacterium, br::AbstractBacteriaRules) = false
+
+"""
+Computes the probability that a bacterium with a prophage looses recovers.
+"""
+recovers(bact::AbstractBacterium, br::ProphageBacteriaRules) = br.precover > 0.0 && rand() < br.precover
 
 """
     bacteriaprobs(br::BacteriaRules, bact::AbstractBacterium)

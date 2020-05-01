@@ -48,6 +48,11 @@ function step_bacteria!(grid::BactGrid,
                 grid[I] = nothing
                 sI = nothing
                 continue
+            elseif recovers(bact, bactrules)
+                # remove phage
+                bact = prophage(bact, 0)
+                # add phage to grid
+                grid[I] = bact
             end
         else
             # no latent phage, so check if there are any phages that might attack
