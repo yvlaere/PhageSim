@@ -5,44 +5,54 @@ using DrWatson
 quickactivate(@__DIR__, "PhageSim")
 using PhageSim
 using Plots
+using Statistics
 import BSON: @save, @load
 
 #scenario
-#ninitbact, pdie, prepr
-ldens = [50, 0.15, 0.30]
-mdens = [200, 0.10, 0.35]
-hdens = [500, 0.05, 0.40]
+#ninitbact, initphages, pdie, prepr
+ldens = [50, 500, 0.15, 0.30]
+mdens = [200, 2000, 0.10, 0.35]
+hdens = [500, 5000, 0.05, 0.40]
 dens = [ldens, mdens, hdens]
 
 #situatie
 #plysogeny, plysis
-sit1 = [0.0, 0.5]
-sit2 = [0.0, 0.1]
-sit3 = [0.1, 0.3]
-sit4 = [0.3, 0.6]
-sit5 = [0.5, 0.5]
-sit6 = [0.5, 0.3]
+#plysogeny = bij contact kans op lysogenie, rest voor lyse
+#plyse = bij lysogenie, kans op lyse
+sit1 = [0.0, 0.9] #2e waarde irrelevant
+sit2 = [0.1, 0.7]
+sit3 = [0.3, 0.5]
+sit4 = [0.5, 0.3]
+sit5 = [0.7, 0.1]
+sit6 = [0.9, 0.0]
 sit = [sit1, sit2, sit3, sit4, sit5, sit6]
+
+#aantal simulaties van 1 situatie
+nsims = 5
+overzicht = zeros(Float16, length(dens)*length(sit), 6)
 
 for i = 1:length(dens)
     for j = 1:length(sit)
 
-        name = "scenario" * string(i) * "situatie" * string(j)  # give a name to your simulation
+        nbact = zeros(Int64, nsims, 3)
+        nfaag = zeros(Int64, nsims, 3)
 
+        name = "scenario" * string(i) * "situatie" * string(j)  # give a name to your simulation
+        println(name)
         # PARAMETERS OF THE SIMULATION
         # ----------------------------
 
         # bacteria
         # --------
 
-        prepr = dens[i][3]
+        prepr = dens[i][4]
         pmove = 0.4
-        pdie = dens[i][2]
+        pdie = dens[i][3]
 
         # phages
         # -----
 
-        pdecay = 0.01  # probability that a viron decays
+        pdecay = 0.02  # probability that a viron decays
         Rphages = 5  # mixing radius for the dispersion of the phages
 
         # interactions
@@ -60,10 +70,10 @@ for i = 1:length(dens)
         # simulation stuff
         # ----------------
 
-        nsteps = 200
+        nsteps = 50
         D = 100  # size of the grid
         ninitbact = floor(Int64, dens[i][1])
-        ninitphages = 100
+        ninitphages = floor(Int64, dens[i][2])
 
         # PROCESSING THE PARAMETERS
         # -------------------------
@@ -97,10 +107,14 @@ for i = 1:length(dens)
         # perform the simulations, the function `species_counts`, with keyword arguments
         # `nspecies` for the number of bacterium species, count the number of bacteria
         # and the number of phage sp in every time step
+        for k = 1:nsims
+            results = simulate!(bactgrid, phagegrids, bactrules, phagerules, interactrules, nsteps; resultfun=species_counts, nspecies=nbactsp)
+            nbact[k, 1:3] = last(results)[1]
+            nfaag[k, 1:3] = last(results)[2]
+        end
 
-        results = simulate!(bactgrid, phagegrids, bactrules, phagerules, interactrules,
-                        nsteps; resultfun=species_counts, nspecies=nbactsp)
-
+        overzicht[(i - 1)*8 + j, 1:3] = mean(nbact, dims = 1)
+        overzicht[(i - 1)*8 + j, 4:6] = mean(nfaag, dims = 1)
         # DATA STORAGE AND VISUALIZATION
         # ------------------------------
 
@@ -118,13 +132,13 @@ for i = 1:length(dens)
         bactres = [res[1][sp] for res in results, sp in 1:nbactsp]
         phageres = [res[2][sp] for res in results, sp in 1:nphagesp]
 
-        p = plot(plot(bactres, labels=["sp. 1" "sp. 2" "sp. 3"], xlabel="step",
-                ylabel="number of bacteria", title="Bacteria composition"),
-            plot(phageres, labels=["sp. 1" "sp. 2" "sp. 3"], ls=:dash, xlabel="step",
-                    ylabel="number of phages", title="Phage composition"))
+        #p = plot(plot(bactres, labels=["sp. 1" "sp. 2" "sp. 3"], xlabel="step",
+        #        ylabel="number of bacteria", title="Bacteria composition"),
+        #    plot(phageres, labels=["sp. 1" "sp. 2" "sp. 3"], ls=:dash, xlabel="step",
+        #            ylabel="number of phages", title="Phage composition"))
 
-        savefig(p, plotsdir(fname) * ".png")
+        #savefig(p, plotsdir(fname) * ".png")
     end
 end
 
-a = 3
+print(overzicht)
