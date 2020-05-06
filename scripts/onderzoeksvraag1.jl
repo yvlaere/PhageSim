@@ -6,6 +6,7 @@ quickactivate(@__DIR__, "PhageSim")
 using PhageSim
 using Plots
 using Statistics
+using DataFrames
 import BSON: @save, @load
 
 #scenario
@@ -28,8 +29,8 @@ sit6 = [0.9, 0.0]
 sit = [sit1, sit2, sit3, sit4, sit5, sit6]
 
 #aantal simulaties van 1 situatie
-nsims = 5
-overzicht = zeros(Float16, length(dens)*length(sit), 6)
+nsims = 2
+overzicht = zeros(Float32, length(dens)*length(sit), 6)
 
 for i = 1:length(dens)
     for j = 1:length(sit)
@@ -70,7 +71,7 @@ for i = 1:length(dens)
         # simulation stuff
         # ----------------
 
-        nsteps = 50
+        nsteps = 10
         D = 100  # size of the grid
         ninitbact = floor(Int64, dens[i][1])
         ninitphages = floor(Int64, dens[i][2])
@@ -113,8 +114,8 @@ for i = 1:length(dens)
             nfaag[k, 1:3] = last(results)[2]
         end
 
-        overzicht[(i - 1)*8 + j, 1:3] = mean(nbact, dims = 1)
-        overzicht[(i - 1)*8 + j, 4:6] = mean(nfaag, dims = 1)
+        overzicht[(i - 1)*length(sit) + j, 1:3] = mean(nbact, dims = 1)
+        overzicht[(i - 1)*length(sit) + j, 4:6] = mean(nfaag, dims = 1)
         # DATA STORAGE AND VISUALIZATION
         # ------------------------------
 
@@ -141,4 +142,4 @@ for i = 1:length(dens)
     end
 end
 
-print(overzicht)
+print(convert(DataFrame, overzicht))
