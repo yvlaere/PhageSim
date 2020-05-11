@@ -30,7 +30,7 @@ sit = [sit1, sit2, sit3, sit4, sit5, sit6]
 
 #aantal simulaties van 1 situatie
 nsims = 2
-overzicht = zeros(Float32, length(dens)*length(sit), 6)
+overzicht = zeros(Float32, length(dens)*length(sit), 2)
 
 for i = 1:length(dens)
     for j = 1:length(sit)
@@ -114,24 +114,24 @@ for i = 1:length(dens)
             nfaag[k, 1:3] = last(results)[2]
         end
 
-        overzicht[(i - 1)*length(sit) + j, 1:3] = mean(nbact, dims = 1)
-        overzicht[(i - 1)*length(sit) + j, 4:6] = mean(nfaag, dims = 1)
+        overzicht[(i - 1)*length(sit) + j, 1] = mean(mean(nbact, dims = 1))
+        overzicht[(i - 1)*length(sit) + j, 2] = mean(mean(nfaag, dims = 1))
         # DATA STORAGE AND VISUALIZATION
         # ------------------------------
 
         # generate a unique name
-        fname = savename(name, simpars)
+        #fname = savename(name, simpars)
 
         # save the simulation in a BSON file
-        @save datadir(fname) * ".bson" results
+        #@save datadir(fname) * ".bson" results
 
         # can be loaded using
         # @load datadir(fname) * ".bson"
 
         # plotting
 
-        bactres = [res[1][sp] for res in results, sp in 1:nbactsp]
-        phageres = [res[2][sp] for res in results, sp in 1:nphagesp]
+        #bactres = [res[1][sp] for res in results, sp in 1:nbactsp]
+        #phageres = [res[2][sp] for res in results, sp in 1:nphagesp]
 
         #p = plot(plot(bactres, labels=["sp. 1" "sp. 2" "sp. 3"], xlabel="step",
         #        ylabel="number of bacteria", title="Bacteria composition"),
