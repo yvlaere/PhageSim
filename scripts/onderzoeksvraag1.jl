@@ -158,8 +158,8 @@ bactplotdata = [overzicht[1:length(sit), 1]/mean(overzicht[1:length(sit), 1]),
 faagplotdata = [overzicht[1:length(sit), 2]/mean(overzicht[1:length(sit), 2]),
  overzicht[length(sit) + 1:2*length(sit), 2]/mean(overzicht[length(sit) + 1:2*length(sit), 2]),
  overzicht[2*length(sit) + 1:3*length(sit), 2]/mean(overzicht[2*length(sit) + 1:3*length(sit), 2])]
-p = plot(plot(ratio, bactplotdata, labels=["sit1" "sit2" "sit3"], xlabel = "plysogeny/plyse", ylabel="nr. bact/gem(nr. bact)", title="Bacteria composition"),
- plot(ratio, faagplotdata, labels=["sit1" "sit2" "sit3"], xlabel = "plysogeny/plyse", ylabel="nr. faag/gem(nr. faag)", title="Faag composition"))
+p = plot(plot(ratio, bactplotdata, labels=["milieu1" "milieu2" "milieu3"], xlabel = "plysogeny/plyse", ylabel="nr. bact/gem(nr. bact)", title="Bacteria composition"),
+ plot(ratio, faagplotdata, labels=["milieu1" "milieu2" "milieu3"], xlabel = "plysogeny/plyse", ylabel="nr. faag/gem(nr. faag)", title="Faag composition"))
 
 simpars = @dict nsims nsteps
 fname = savename(plotname, simpars)
