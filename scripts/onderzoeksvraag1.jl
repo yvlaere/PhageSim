@@ -20,17 +20,20 @@ dens = [ldens, mdens, hdens]
 #plysogeny, plysis
 #plysogeny = bij contact kans op lysogenie, rest voor lyse
 #plyse = bij lysogenie, kans op lyse
-sit1 = [0.0, 0.9] #2e waarde irrelevant
-sit2 = [0.1, 0.7]
-sit3 = [0.3, 0.5]
-sit4 = [0.5, 0.3]
-sit5 = [0.7, 0.1]
-sit6 = [0.9, 0.0]
-sit = [sit1, sit2, sit3, sit4, sit5, sit6]
+sit1 = [0.0, 1.0]
+sit2 = [0.3, 0.7]
+sit3 = [0.5, 0.5]
+sit4 = [0.6, 0.4]
+sit5 = [0.7, 0.3]
+sit6 = [0.8, 0.2]
+sit7 = [0.85, 0.1]
+sit = [sit1, sit2, sit3, sit4, sit5, sit6, sit7]
 
 #aantal simulaties van 1 situatie
-nsims = 2
+nsims = 10
 overzicht = zeros(Float32, length(dens)*length(sit), 2)
+ratio = zeros(Float32, length(sit))
+plotname = "degelijke test2"
 
 for i = 1:length(dens)
     for j = 1:length(sit)
@@ -71,7 +74,7 @@ for i = 1:length(dens)
         # simulation stuff
         # ----------------
 
-        nsteps = 10
+        nsteps = 200
         D = 100  # size of the grid
         ninitbact = floor(Int64, dens[i][1])
         ninitphages = floor(Int64, dens[i][2])
@@ -81,7 +84,7 @@ for i = 1:length(dens)
 
         nbactsp, nphagesp = size(Pinf)
 
-        simpars = @dict nbactsp nphagesp prepr pmove pdie pdecay Rphages burstsize plysogeny plysis Rqs nsteps D ninitbact ninitphages
+        simpars = @dict prepr pdie  plysogeny plysis ninitbact
 
         bactrules = BacteriaRules(prepr, pmove, pdie)
         phagerules = PhageRules(pdecay, Rphages)
@@ -143,3 +146,21 @@ for i = 1:length(dens)
 end
 
 print(convert(DataFrame, overzicht))
+
+#plysogeny/plyse
+for k = 1:length(sit)
+    ratio[k] = sit[k][1]/sit[k][2]
+end
+
+bactplotdata = [overzicht[1:length(sit), 1]/mean(overzicht[1:length(sit), 1]),
+ overzicht[length(sit) + 1:2*length(sit), 1]/mean(overzicht[length(sit) + 1:2*length(sit), 1]),
+ overzicht[2*length(sit) + 1:3*length(sit), 1]/mean(overzicht[2*length(sit) + 1:3*length(sit), 1])]
+faagplotdata = [overzicht[1:length(sit), 2]/mean(overzicht[1:length(sit), 2]),
+ overzicht[length(sit) + 1:2*length(sit), 2]/mean(overzicht[length(sit) + 1:2*length(sit), 2]),
+ overzicht[2*length(sit) + 1:3*length(sit), 2]/mean(overzicht[2*length(sit) + 1:3*length(sit), 2])]
+p = plot(plot(ratio, bactplotdata, labels=["sit1" "sit2" "sit3"], xlabel = "plysogeny/plyse", ylabel="nr. bact/gem(nr. bact)", title="Bacteria composition"),
+ plot(ratio, faagplotdata, labels=["sit1" "sit2" "sit3"], xlabel = "plysogeny/plyse", ylabel="nr. faag/gem(nr. faag)", title="Faag composition"))
+
+simpars = @dict nsims nsteps
+fname = savename(plotname, simpars)
+savefig(p, plotsdir(fname) * ".png")
