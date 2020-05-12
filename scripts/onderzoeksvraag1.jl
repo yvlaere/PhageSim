@@ -33,7 +33,8 @@ sit = [sit1, sit2, sit3, sit4, sit5, sit6, sit7]
 nsims = 10
 overzicht = zeros(Float32, length(dens)*length(sit), 2)
 ratio = zeros(Float32, length(sit))
-plotname = "degelijke test2"
+plotname = "test6"
+nsteps = 200
 
 for i = 1:length(dens)
     for j = 1:length(sit)
@@ -74,7 +75,6 @@ for i = 1:length(dens)
         # simulation stuff
         # ----------------
 
-        nsteps = 200
         D = 100  # size of the grid
         ninitbact = floor(Int64, dens[i][1])
         ninitphages = floor(Int64, dens[i][2])
