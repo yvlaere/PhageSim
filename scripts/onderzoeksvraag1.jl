@@ -33,7 +33,7 @@ sit = [sit1, sit2, sit3, sit4, sit5, sit6, sit7]
 nsims = 10
 overzicht = zeros(Float32, length(dens)*length(sit), 2)
 ratio = zeros(Float32, length(sit))
-plotname = "test6"
+plotname = "logtest2"
 nsteps = 200
 
 for i = 1:length(dens)
@@ -151,6 +151,9 @@ print(convert(DataFrame, overzicht))
 for k = 1:length(sit)
     ratio[k] = sit[k][1]/sit[k][2]
 end
+
+overzicht = log.(10, overzicht)
+print(convert(DataFrame, overzicht))
 
 bactplotdata = [overzicht[1:length(sit), 1]/mean(overzicht[1:length(sit), 1]),
  overzicht[length(sit) + 1:2*length(sit), 1]/mean(overzicht[length(sit) + 1:2*length(sit), 1]),
