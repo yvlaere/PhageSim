@@ -1,5 +1,3 @@
-#alle figuren voor onderzoeksvraag1
-#worden in 1 keer aangemaakt
 
 using DrWatson
 quickactivate(@__DIR__, "PhageSim")
@@ -11,9 +9,9 @@ import BSON: @save, @load
 
 #scenario
 #ninitbact, initphages, pdie, prepr
-ldens = [100, 100, 0.15, 0.30]
-mdens = [100, 100, 0.10, 0.35]
-hdens = [100, 100, 0.05, 0.40]
+ldens = [50, 500, 0.15, 0.30]
+mdens = [200, 2000, 0.10, 0.35]
+hdens = [500, 5000, 0.05, 0.40]
 dens = [ldens, mdens, hdens]
 
 #situatie
@@ -29,19 +27,12 @@ sit6 = [0.8, 0.2]
 sit7 = [0.85, 0.1]
 sit = [sit1, sit2, sit3, sit4, sit5, sit6, sit7]
 
-#aantal simulaties van 1 situatie
-nsims = 10
-overzicht = zeros(Float32, length(dens)*length(sit), 2)
-ratio = zeros(Float32, length(sit))
-plotname = "tabel"
+plotname = "s7plotsfinal2"
 nsteps = 200
+overzicht = zeros(Float64, nsteps + 1, 2*length(dens))
 
 for i = 1:length(dens)
-    for j = 1:length(sit)
-
-        nbact = zeros(Int64, nsims, 3)
-        nfaag = zeros(Int64, nsims, 3)
-
+        j = 7
         name = "scenario" * string(i) * "situatie" * string(j)  # give a name to your simulation
         println(name)
         # PARAMETERS OF THE SIMULATION
@@ -111,14 +102,16 @@ for i = 1:length(dens)
         # perform the simulations, the function `species_counts`, with keyword arguments
         # `nspecies` for the number of bacterium species, count the number of bacteria
         # and the number of phage sp in every time step
-        for k = 1:nsims
-            results = simulate!(bactgrid, phagegrids, bactrules, phagerules, interactrules, nsteps; resultfun=species_counts, nspecies=nbactsp)
-            nbact[k, 1:3] = last(results)[1]
-            nfaag[k, 1:3] = last(results)[2]
-        end
 
-        overzicht[(i - 1)*length(sit) + j, 1] = mean(mean(nbact, dims = 1))
-        overzicht[(i - 1)*length(sit) + j, 2] = mean(mean(nfaag, dims = 1))
+        results = simulate!(bactgrid, phagegrids, bactrules, phagerules, interactrules, nsteps; resultfun=species_counts, nspecies=nbactsp)
+        bactres = [res[1][sp] for res in results, sp in 1:nbactsp]./ninitbact
+        phageres = [res[2][sp] for res in results, sp in 1:nphagesp]./ninitphages
+        print(bactres)
+        print(mean(bactres, dims = 2))
+        overzicht[1:nsteps + 1, i] = mean(bactres, dims = 2)
+        overzicht[1:nsteps + 1, i + 3] = mean(phageres, dims = 2)
+
+        print(convert(DataFrame, overzicht))
         # DATA STORAGE AND VISUALIZATION
         # ------------------------------
 
@@ -133,8 +126,8 @@ for i = 1:length(dens)
 
         # plotting
 
-        #bactres = [res[1][sp] for res in results, sp in 1:nbactsp]
-        #phageres = [res[2][sp] for res in results, sp in 1:nphagesp]
+        #bactres = [res[1][sp] for res in results, sp in 1:nbactsp]./ninitbact
+        #phageres = [res[2][sp] for res in results, sp in 1:nphagesp]./ninitphages
 
         #p = plot(plot(bactres, labels=["sp. 1" "sp. 2" "sp. 3"], xlabel="step",
         #        ylabel="number of bacteria", title="Bacteria composition"),
@@ -142,28 +135,16 @@ for i = 1:length(dens)
         #            ylabel="number of phages", title="Phage composition"))
 
         #savefig(p, plotsdir(fname) * ".png")
-    end
 end
 
-print(convert(DataFrame, overzicht))
+p = plot(plot(overzicht[:, 1:3], labels=["milieu1" "milieu2" "milieu3"], xlabel="step",
+        ylabel="number of bacteria", title="Bacteria composition"),
+    plot(overzicht[:, 4:6], labels=["milieu1" "milieu2" "milieu3"], ls=:dash, xlabel="step",
+            ylabel="number of phages", title="Phage composition"))
 
-#lysogeny/(1 - plysogeny
-for k = 1:length(sit)
-    ratio[k] = sit[k][1]/(1 - sit[k][1])#sit[k][2]
-end
+#p = plot(plot(overzicht[1], ),
+# plot(overzicht[2]))
 
-#overzicht = log.(10, overzicht)
-#print(convert(DataFrame, overzicht))
-
-bactplotdata = [overzicht[1:length(sit), 1]/mean(overzicht[1:length(sit), 1]),
- overzicht[length(sit) + 1:2*length(sit), 1]/mean(overzicht[length(sit) + 1:2*length(sit), 1]),
- overzicht[2*length(sit) + 1:3*length(sit), 1]/mean(overzicht[2*length(sit) + 1:3*length(sit), 1])]
-faagplotdata = [overzicht[1:length(sit), 2]/mean(overzicht[1:length(sit), 2]),
- overzicht[length(sit) + 1:2*length(sit), 2]/mean(overzicht[length(sit) + 1:2*length(sit), 2]),
- overzicht[2*length(sit) + 1:3*length(sit), 2]/mean(overzicht[2*length(sit) + 1:3*length(sit), 2])]
-p = plot(plot(ratio, bactplotdata, labels=["milieu1" "milieu2" "milieu3"], xlabel = "lysogeny/lyse", ylabel="nr. bact/gem(nr. bact)", title="Voorkomen bacterien"),
- plot(ratio, faagplotdata, labels=["milieu1" "milieu2" "milieu3"], xlabel = "lysogeny/lyse", ylabel="nr. faag/gem(nr. faag)", title="Voorkomen fagen"))
-
-simpars = @dict nsims nsteps
+simpars = @dict nsteps
 fname = savename(plotname, simpars)
 savefig(p, plotsdir(fname) * ".png")
