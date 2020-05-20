@@ -30,11 +30,11 @@ sit7 = [0.85, 0.1]
 sit = [sit1, sit2, sit3, sit4, sit5, sit6, sit7]
 
 #aantal simulaties van 1 situatie
-nsims = 10
+nsims = 1
 overzicht = zeros(Float32, length(dens)*length(sit), 2)
 ratio = zeros(Float32, length(sit))
-plotname = "tabel"
-nsteps = 200
+plotname = "plotloglog7"
+nsteps = 10
 
 for i = 1:length(dens)
     for j = 1:length(sit)
@@ -115,6 +115,7 @@ for i = 1:length(dens)
             results = simulate!(bactgrid, phagegrids, bactrules, phagerules, interactrules, nsteps; resultfun=species_counts, nspecies=nbactsp)
             nbact[k, 1:3] = last(results)[1]
             nfaag[k, 1:3] = last(results)[2]
+            println("sim done")
         end
 
         overzicht[(i - 1)*length(sit) + j, 1] = mean(mean(nbact, dims = 1))
@@ -149,20 +150,44 @@ print(convert(DataFrame, overzicht))
 
 #lysogeny/(1 - plysogeny
 for k = 1:length(sit)
-    ratio[k] = sit[k][1]/(1 - sit[k][1])#sit[k][2]
+    ratio[k] = round(sit[k][1]/(1 - sit[k][1]), digits = 5)#sit[k][2]
 end
 
-#overzicht = log.(10, overzicht)
-#print(convert(DataFrame, overzicht))
+#logoverzicht = log.(10, overzicht)
+#for l = 1:2
+#    for m = 1:length(dens)*length(sit)
+#        if logoverzicht[m, l] == -Inf
+#            logoverzicht[m, l] = 0
+#        end
+#    end
+#end
+#print(convert(DataFrame, logoverzicht))
 
-bactplotdata = [overzicht[1:length(sit), 1]/mean(overzicht[1:length(sit), 1]),
- overzicht[length(sit) + 1:2*length(sit), 1]/mean(overzicht[length(sit) + 1:2*length(sit), 1]),
- overzicht[2*length(sit) + 1:3*length(sit), 1]/mean(overzicht[2*length(sit) + 1:3*length(sit), 1])]
-faagplotdata = [overzicht[1:length(sit), 2]/mean(overzicht[1:length(sit), 2]),
- overzicht[length(sit) + 1:2*length(sit), 2]/mean(overzicht[length(sit) + 1:2*length(sit), 2]),
- overzicht[2*length(sit) + 1:3*length(sit), 2]/mean(overzicht[2*length(sit) + 1:3*length(sit), 2])]
-p = plot(plot(ratio, bactplotdata, labels=["milieu1" "milieu2" "milieu3"], xlabel = "lysogeny/lyse", ylabel="nr. bact/gem(nr. bact)", title="Voorkomen bacterien"),
- plot(ratio, faagplotdata, labels=["milieu1" "milieu2" "milieu3"], xlabel = "lysogeny/lyse", ylabel="nr. faag/gem(nr. faag)", title="Voorkomen fagen"))
+#logbactplotdata = [logoverzicht[1:length(sit), 1]/mean(logoverzicht[1:length(sit), 1]),
+# logoverzicht[length(sit) + 1:2*length(sit), 1]/mean(logoverzicht[length(sit) + 1:2*length(sit), 1]),
+# logoverzicht[2*length(sit) + 1:3*length(sit), 1]/mean(logoverzicht[2*length(sit) + 1:3*length(sit), 1])]
+#logfaagplotdata = [logoverzicht[1:length(sit), 2]/mean(logoverzicht[1:length(sit), 2]),
+# logoverzicht[length(sit) + 1:2*length(sit), 2]/mean(logoverzicht[length(sit) + 1:2*length(sit), 2]),
+# logoverzicht[2*length(sit) + 1:3*length(sit), 2]/mean(logoverzicht[2*length(sit) + 1:3*length(sit), 2])]
+#p1 = plot(plot(ratio, logbactplotdata, labels=["arm milieu" "matig milieu" "rijk milieu"], xlabel = "lysogeny/lyse", ylabel="nr. bact/gem(nr. bact)", title="Voorkomen bacterien"),
+# plot(ratio, logfaagplotdata, labels=["arm milieu" "matig milieu" "rijk milieu"], xlabel = "lysogeny/lyse", ylabel="nr. faag/gem(nr. faag)", title="Voorkomen fagen"))
+
+ bactplotdata = [overzicht[1:length(sit), 1]/mean(overzicht[1:length(sit), 1]),
+  overzicht[length(sit) + 1:2*length(sit), 1]/mean(overzicht[length(sit) + 1:2*length(sit), 1]),
+  overzicht[2*length(sit) + 1:3*length(sit), 1]/mean(overzicht[2*length(sit) + 1:3*length(sit), 1])]
+ faagplotdata = [overzicht[1:length(sit), 2]/mean(overzicht[1:length(sit), 2]),
+  overzicht[length(sit) + 1:2*length(sit), 2]/mean(overzicht[length(sit) + 1:2*length(sit), 2]),
+  overzicht[2*length(sit) + 1:3*length(sit), 2]/mean(overzicht[2*length(sit) + 1:3*length(sit), 2])]
+
+for l = 1:3
+    for m = 1:7
+        bactplotdata[l][m] = round(bactplotdata[l][m], digits = 5)
+        faagplotdata[l][m] = round(faagplotdata[l][m], digits = 5)
+    end
+end
+
+p = plot(plot(ratio, bactplotdata, labels=["arm milieu" "matig milieu" "rijk milieu"], xlabel = "lysogeny/lyse", ylabel="nr. bact/gem(nr. bact)", title="Voorkomen bacterien", legend=:topleft),
+ plot(ratio, faagplotdata, labels=["arm milieu" "matig milieu" "rijk milieu"], xlabel = "lysogeny/lyse", ylabel="nr. faag/gem(nr. faag)", title="Voorkomen fagen", legend=:topleft))
 
 simpars = @dict nsims nsteps
 fname = savename(plotname, simpars)

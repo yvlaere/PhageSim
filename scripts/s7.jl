@@ -9,6 +9,7 @@ import BSON: @save, @load
 
 #scenario
 #ninitbact, initphages, pdie, prepr
+#ninitphages wordt maal 10 gedaan?
 ldens = [50, 500, 0.15, 0.30]
 mdens = [200, 2000, 0.10, 0.35]
 hdens = [500, 5000, 0.05, 0.40]
@@ -27,7 +28,7 @@ sit6 = [0.8, 0.2]
 sit7 = [0.85, 0.1]
 sit = [sit1, sit2, sit3, sit4, sit5, sit6, sit7]
 
-plotname = "s7plotsfinal2"
+plotname = "s7plotsfinal3"
 nsteps = 200
 overzicht = zeros(Float64, nsteps + 1, 2*length(dens))
 
@@ -67,8 +68,12 @@ for i = 1:length(dens)
         # ----------------
 
         D = 100  # size of the grid
+        #aantal bacterien, verdeeld over 3 soorten
         ninitbact = floor(Int64, dens[i][1])
+        #aantal fagen, per soort
         ninitphages = floor(Int64, dens[i][2])
+        println("aantal bact: " * string(ninitbact))
+        println("aantal faag: " * string(ninitphages))
 
         # PROCESSING THE PARAMETERS
         # -------------------------
@@ -104,10 +109,10 @@ for i = 1:length(dens)
         # and the number of phage sp in every time step
 
         results = simulate!(bactgrid, phagegrids, bactrules, phagerules, interactrules, nsteps; resultfun=species_counts, nspecies=nbactsp)
-        bactres = [res[1][sp] for res in results, sp in 1:nbactsp]./ninitbact
-        phageres = [res[2][sp] for res in results, sp in 1:nphagesp]./ninitphages
-        print(bactres)
-        print(mean(bactres, dims = 2))
+        bactres = [res[1][sp] for res in results, sp in 1:nbactsp]./(ninitbact/3)
+        phageres = [res[2][sp] for res in results, sp in 1:nphagesp]./(ninitphages*10)
+        println(results)
+        println(bactres)
         overzicht[1:nsteps + 1, i] = mean(bactres, dims = 2)
         overzicht[1:nsteps + 1, i + 3] = mean(phageres, dims = 2)
 
@@ -138,13 +143,14 @@ for i = 1:length(dens)
 end
 
 p = plot(plot(overzicht[:, 1:3], labels=["milieu1" "milieu2" "milieu3"], xlabel="step",
-        ylabel="number of bacteria", title="Bacteria composition"),
+        ylabel="nr. bacteria/nr. init bacteria", title="Bacteria composition"),
     plot(overzicht[:, 4:6], labels=["milieu1" "milieu2" "milieu3"], ls=:dash, xlabel="step",
-            ylabel="number of phages", title="Phage composition"))
+            ylabel="nr. phages/nr.init phages", title="Phage composition"))
 
 #p = plot(plot(overzicht[1], ),
 # plot(overzicht[2]))
 
 simpars = @dict nsteps
+plotname = "s7final"
 fname = savename(plotname, simpars)
 savefig(p, plotsdir(fname) * ".png")
